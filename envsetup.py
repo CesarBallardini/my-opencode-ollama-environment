@@ -462,7 +462,7 @@ class Runner:
         return completed
 
     def powershell(self, script: str, *, check: bool = True) -> str:
-        """Run a PowerShell snippet and return its standard output.
+        """Run a PowerShell snippet in Windows PowerShell and return its standard output.
 
         Cmdlet errors become terminating and exit 2, except where the snippet says
         -ErrorAction SilentlyContinue; a "not found" query therefore exits 0 with no output
@@ -475,8 +475,19 @@ class Runner:
         completed = self.run(
             ['powershell', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', wrapped],
             check=check,
+            env=powershell_env(),
         )
         return completed.stdout
+
+
+def powershell_env() -> dict[str, str]:
+    """This process's environment without PSModulePath, for starting Windows PowerShell.
+
+    Started from PowerShell 7, it inherits a module path that lists the PowerShell 7 modules first and then
+    cannot load its own: Get-Acl fails with "the module could not be loaded". Without the variable it builds
+    its default path.
+    """
+    return {name: value for name, value in os.environ.items() if name.upper() != 'PSMODULEPATH'}
 
 
 def winget_install(runner: CommandRunner, package_id: str, version: str | None = None) -> None:
@@ -602,7 +613,7 @@ class UserEnv:
         user32.SendMessageTimeoutW(0xFFFF, 0x001A, 0, 'Environment', 0x0002, 5000, ctypes.byref(result))
 
     def refresh_process_path(self) -> None:  # pragma: no cover  (reads the live registry)
-        """Rebuild PATH of this process from the registry."""
+        """Bring the registry's PATH into this process, see the function of the same name."""
         refresh_process_path(self)
 
 
@@ -630,8 +641,21 @@ def path_remove(entries: list[str], entry: str) -> list[str]:
     return [e for e in entries if _path_key(e) not in wanted and _path_key(os.path.expandvars(e)) not in wanted]
 
 
+def merged_path(registry_path: str, process_path: str) -> str:
+    """The registry's entries in order, then the entries only this process has, without duplicates.
+
+    A process can hold entries the registry lacks, such as a tool that a CI runner or a console added for
+    itself. Replacing PATH with the registry value would hide those tools from every later step.
+    """
+    merged: dict[str, str] = {}
+    for entry in os.path.expandvars(registry_path).split(os.pathsep) + process_path.split(os.pathsep):
+        if entry.strip():
+            merged.setdefault(_path_key(entry), entry)
+    return os.pathsep.join(merged.values())
+
+
 def refresh_process_path(user_env: UserEnv) -> None:  # pragma: no cover  (reads the live registry)
-    """Rebuild PATH of this process from the registry (machine part, then user part)."""
+    """Add the registry's PATH (machine part, then user part) in front of this process's PATH."""
     machine = ''
     with (
         winreg.OpenKey(
@@ -641,7 +665,7 @@ def refresh_process_path(user_env: UserEnv) -> None:  # pragma: no cover  (reads
     ):
         machine = str(winreg.QueryValueEx(key, 'Path')[0])
     combined = ';'.join(part for part in (machine, user_env.get('Path') or '') if part)
-    os.environ['PATH'] = os.path.expandvars(combined)
+    os.environ['PATH'] = merged_path(combined, os.environ.get('PATH', ''))
 
 
 # ----------------------------------------------------------------------------- .bashrc block

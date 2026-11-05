@@ -89,6 +89,7 @@ def test_user_environment_round_trip(monkeypatch: pytest.MonkeyPatch) -> None:
         env.refresh_process_path()
         assert os.environ['PATH'] != 'nothing'
         assert 'system32' in os.environ['PATH'].lower()
+        assert 'nothing' in os.environ['PATH'].split(os.pathsep)  # what only this process had is kept
     finally:
         env.delete(name)
     assert env.get(name) is None
@@ -104,6 +105,16 @@ def test_listening_addresses_sees_a_real_loopback_listener(runner: es.Runner) ->
         assert es.listening_addresses(runner, port) == ['127.0.0.1']
         assert verify.port_open(port)
     assert not verify.port_open(port)
+
+
+def test_powershell_ignores_a_module_path_inherited_from_powershell_7(
+    runner: es.Runner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # What a console or a CI step running PowerShell 7 hands to its children.
+    monkeypatch.setenv('PSModulePath', r'C:\Program Files\PowerShell\7\Modules')
+    target = tmp_path / 'file.txt'
+    target.write_text('x', encoding='utf-8')
+    assert es.acl_sids(runner, target)
 
 
 def test_acl_round_trip_restricts_a_broadly_readable_file(runner: es.Runner, tmp_path: Path) -> None:

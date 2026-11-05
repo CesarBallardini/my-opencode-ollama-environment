@@ -6,6 +6,9 @@ target-version = "py314"
 # therefore not reformatted here: a change to it is a change to the deployed
 # proxy and goes through --update-templates, not through a lint pass.
 exclude = ["local-llm"]
+# pre-commit passes file names, and ruff checks a file named on its command line
+# even when it is excluded, unless this is set.
+force-exclude = true
 
 [lint]
 select = [

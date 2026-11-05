@@ -17,6 +17,7 @@ from conftest import PINNED, REPO, FakeRunner, FakeUserEnv, nested, raw_config
 import envsetup as es
 
 if TYPE_CHECKING:
+    import subprocess  # nosec B404
     from collections.abc import Iterator
 
     from envtypes import FirewallRuleDto, InstallConfigDto, JsonObject, JsonValue
@@ -386,3 +387,31 @@ def test_misc_helpers(tmp_path: Path) -> None:
     assert context.secrets_path == tmp_path / '.secrets' / es.SECRETS_DIR_NAME / 'secrets.env'
     context.secrets_file = tmp_path / 's.env'
     assert context.secrets_path == tmp_path / 's.env'
+
+
+def test_merged_path_puts_the_registry_first_and_keeps_what_only_the_process_has() -> None:
+    assert es.merged_path(r'C:\a;C:\b', r'C:\B' + '\\' + r';C:\tool;;C:\a') == r'C:\a;C:\b;C:\tool'
+
+
+def test_merged_path_expands_the_registry_value(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('MERGE_ROOT', r'C:\r')
+    assert es.merged_path(r'%MERGE_ROOT%\bin', r'C:\r\BIN') == r'C:\r\bin'
+
+
+def test_powershell_does_not_inherit_the_module_path(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv('PSModulePath', 'from-powershell-7')
+    monkeypatch.setenv('KEPT_VARIABLE', 'yes')
+    environments: list[dict[str, str] | None] = []
+
+    def fake_run(
+        args: list[str], *, env: dict[str, str] | None = None, **_options: bool | str | float | None
+    ) -> subprocess.CompletedProcess[str]:
+        environments.append(env)
+        return es.subprocess.CompletedProcess(args, 0, 'out', '')
+
+    monkeypatch.setattr(es.subprocess, 'run', fake_run)
+    assert es.Runner(logging.getLogger('test')).powershell('Write-Output out') == 'out'
+    environment = environments[0]
+    assert environment is not None
+    assert {name.upper() for name in environment} >= {'KEPT_VARIABLE'}
+    assert 'PSMODULEPATH' not in {name.upper() for name in environment}

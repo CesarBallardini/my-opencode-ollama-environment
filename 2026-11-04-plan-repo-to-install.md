@@ -466,8 +466,8 @@ start, which is the `registry.npmjs.org` traffic the proxy log shows (3.3), and 
       it has not been run yet.
 - [ ] The same run with Ollama, OpenCode and Claude Code installed through winget beforehand
       (`vm-e2e.ps1 -Scenario preexisting`): all three must still be installed after the uninstall.
-- [ ] First run of `.github/workflows/e2e.yml` and of the integration step in `pytest.yml`, which need the
-      repository pushed; then set the timeout in `e2e.yml` from the measured duration.
+- [ ] A green run of `.github/workflows/e2e.yml` and of the integration step in `pytest.yml`; then set the
+      timeout in `e2e.yml` from the measured duration. The first runs failed, section 9.
 
 ### Phase 5: the new laptop
 
@@ -528,8 +528,8 @@ are still open.
 What was run on 2026-11-04:
 
 - The quality gates, all green on the final code: `ruff check` and `ruff format --check`, `pyright` and
-  `pyrefly check` (0 errors), `bandit`, 166 tests, coverage 99.53 % (floor 85), `pip-audit`, `osv-scanner`,
-  `gitleaks`, `uv lock --check`. Of the 16 integration tests, 14 passed and 2 skipped.
+  `pyrefly check` (0 errors), `bandit`, 169 tests, coverage 99.54 % (floor 85), `pip-audit`, `osv-scanner`,
+  `gitleaks`, `uv lock --check`. Of the 17 integration tests, 15 passed and 2 skipped here; those 2 need an elevated process.
 - `install.cmd --dry-run`, exit 0. Preflight: WARN 2 GB free (Ollama present, so no stop). The laptop would
   need room freed before a real run that downloads anything. Already done:
   ollama (0.40.14 found), python, ollama-config, models, binaries. Pending: app-settings (both values),
@@ -557,8 +557,22 @@ Deviations from the plan and their reasons:
 - `verify.py` has 13 checks (Appendix D), the install journal being the last.
 - The quality gates were copied from `../localenv-python` (D10); pyright and pyrefly replaced `ty`.
 
-Not run yet: the firewall and elevation integration tests (they need an elevated process, and skip in the
-plain console used here), both end-to-end drivers in full (CI needs a push, the VM needs a guest). The
+The first CI runs, on 2026-11-04, failed in `pytest`, `e2e` and `check`, for three unrelated reasons. All three
+reproduced on the laptop, none came from CI itself, and the first two would also hit a real user:
+
+- Windows PowerShell started from PowerShell 7 inherits a `PSModulePath` that hides its own modules, so
+  `Get-Acl` failed with "the module could not be loaded". The fake runner could not have shown it, and the
+  plain console used here does not have that parent. `Runner.powershell` now drops the variable.
+- `refresh_process_path` replaced `PATH` with the registry value, so a tool only the process knew stopped being
+  found after the first refresh. On the runner that tool was `uv`, and `verify` reported it missing. The
+  registry entries now come first and the process's own entries stay behind them.
+- `ruff.toml` excluded `local-llm/`, but pre-commit passes file names, and ruff checks a named file unless
+  `force-exclude` is set. `ruff check .` never showed it.
+
+Those same runs were the first real ones of several things, and they worked: the firewall integration tests on
+an elevated runner, the downloads with their SHA-256 checks, and the five firewall rules.
+
+Not run yet: a green end-to-end run in CI after those fixes, the VM driver (it needs a guest). The
 drivers' helpers and the wrappers ran for real against a temporary `--home` with
 `--only local-llm,app-settings,cloud`: the second run had nothing pending, the listing removed nothing, and
 the uninstall removed `local-llm` and left the user environment unchanged. This was repeated after the
