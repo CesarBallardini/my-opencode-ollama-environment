@@ -598,13 +598,16 @@ class UserEnv:
             winreg.DeleteValue(key, name)
 
     def path_list(self) -> list[str]:
-        """The user Path split into entries, empty ones dropped."""
+        """The user Path split into entries, empty ones kept so that writing it back changes nothing else."""
         raw = self.get('Path') or ''
-        return [entry for entry in raw.split(';') if entry]
+        return raw.split(';') if raw else []
 
     def set_path_list(self, entries: list[str]) -> None:
-        """Write the user Path from entries, as REG_EXPAND_SZ."""
-        self.set('Path', ';'.join(entries), expandable=True)
+        """Write the user Path from entries, as REG_EXPAND_SZ, or delete it when none remain."""
+        if entries:
+            self.set('Path', ';'.join(entries), expandable=True)
+        else:
+            self.delete('Path')
 
     def broadcast(self) -> None:  # pragma: no cover  (sends a window message to the live desktop)
         """Tell running programs that the environment changed (WM_SETTINGCHANGE)."""
@@ -622,9 +625,9 @@ def _path_key(entry: str) -> str:
 
 
 def path_position(entries: list[str], entry: str) -> int | None:
-    """Index of entry in entries, comparing expanded and normalised forms, or None."""
+    """Index of entry among the non-empty entries, comparing expanded and normalised forms, or None."""
     wanted = {_path_key(entry), _path_key(os.path.expandvars(entry))}
-    for index, candidate in enumerate(entries):
+    for index, candidate in enumerate(filter(None, entries)):
         if _path_key(candidate) in wanted or _path_key(os.path.expandvars(candidate)) in wanted:
             return index
     return None

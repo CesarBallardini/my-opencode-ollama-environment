@@ -531,7 +531,7 @@ are still open.
 What was run on 2026-11-04:
 
 - The quality gates, all green on the final code: `ruff check` and `ruff format --check`, `pyright` and
-  `pyrefly check` (0 errors), `bandit`, 169 tests, coverage 99.54 % (floor 85), `pip-audit`, `osv-scanner`,
+  `pyrefly check` (0 errors), `bandit`, 175 tests, coverage 99.54 % (floor 85), `pip-audit`, `osv-scanner`,
   `gitleaks`, `uv lock --check`. Of the 18 integration tests, 16 passed and 2 skipped here; those 2 need an elevated process.
 - `install.cmd --dry-run`, exit 0. Preflight: WARN 2 GB free (Ollama present, so no stop). The laptop would
   need room freed before a real run that downloads anything. Already done:
@@ -576,6 +576,12 @@ The next run got as far as `uninstall --yes`, which failed with WinError 32 on `
 proxy through `uv run` and stopped only `uv`, so the Python child kept running, with the port and with its
 working directory in that tree. The second `verify` then found it already listening. `verify` now stops the
 whole process tree. This also reproduced on the laptop.
+
+With that fixed, `uninstall --yes` finished and the comparison after it failed: the user `Path` had lost its
+trailing `;`. `path_list` dropped empty entries, so every write normalised the whole value, and a user `Path` that
+had been unset came back empty. Restoring a saved copy would lose what the user added after the install, so the
+entries now keep their empty ones, removal takes out only the installer's entry, and removing the last entry
+deletes the variable. The fake machine could have shown this, but its `Path` had no empty entry.
 
 Those same runs were the first real ones of several things, and they worked: the firewall integration tests on
 an elevated runner, the downloads with their SHA-256 checks, and the five firewall rules.

@@ -335,11 +335,11 @@ class UserEnvironment(Protocol):
         ...
 
     def path_list(self) -> list[str]:
-        """The user Path split into entries."""
+        """The user Path split into entries, empty ones kept."""
         ...
 
     def set_path_list(self, entries: list[str]) -> None:
-        """Write the user Path from entries."""
+        """Write the user Path from entries, or delete it when none remain."""
         ...
 
     def broadcast(self) -> None:

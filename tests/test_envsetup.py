@@ -115,13 +115,22 @@ def test_path_list_helpers() -> None:
     assert es.path_prepend(prepended, es.WRAPPERS_PATH_ENTRY) == prepended
     assert es.path_remove(prepended, es.WRAPPERS_PATH_ENTRY) == [r'C:\Tools', r'C:\Other']
     assert es.path_position([], es.WRAPPERS_PATH_ENTRY) is None
+    assert es.path_position(['', es.WRAPPERS_PATH_ENTRY], es.WRAPPERS_PATH_ENTRY) == 0  # empty is not a position
+    assert es.path_remove(['', es.WRAPPERS_PATH_ENTRY, r'C:\Tools', ''], es.WRAPPERS_PATH_ENTRY) == [
+        '',
+        r'C:\Tools',
+        '',
+    ]
 
 
 def test_user_env_path_helpers_use_get_and_set() -> None:
     env = FakeUserEnv({'Path': r'C:\A;;C:\B'})
-    assert env.path_list() == [r'C:\A', r'C:\B']
-    env.set_path_list([r'C:\B'])
-    assert env.values['Path'] == r'C:\B'
+    assert env.path_list() == [r'C:\A', '', r'C:\B']
+    env.set_path_list([r'C:\B', ''])
+    assert env.values['Path'] == r'C:\B;'
+    env.set_path_list([])
+    assert env.get('Path') is None
+    assert env.path_list() == []
 
 
 def test_sha256_and_files_differ(tmp_path: Path) -> None:

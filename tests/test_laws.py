@@ -104,3 +104,33 @@ def test_the_fake_machine_detects_what_it_installed(machine: FakeContext[FakeMac
     es.winget_uninstall(runner, machine.config['ollama']['winget_id'])
     assert install.ollama_exe(machine) is None
     assert es.ollama_modelfile(runner, 'x') == ''  # a plain `ollama` on PATH is not simulated
+
+
+@pytest.mark.parametrize(
+    'user_path',
+    [r'C:\One;C:\Two;', r'C:\One;;C:\Two', r';C:\One', ';', None],
+    ids=['trailing-separator', 'empty-entry', 'leading-separator', 'only-a-separator', 'unset'],
+)
+def test_uninstall_restores_the_user_path_as_it_was_written(
+    machine: FakeContext[FakeMachine], user_path: str | None
+) -> None:
+    ctx = machine
+    if user_path is None:
+        ctx.user_env.values.pop('Path', None)
+    else:
+        ctx.user_env.values['Path'] = user_path
+    for _ in ('first cycle', 'second cycle'):
+        run_steps(ctx, STEPS)
+        assert es.path_position(ctx.user_env.path_list(), es.WRAPPERS_PATH_ENTRY) == 0
+        uninstall.admin_phase(ctx)
+        uninstall.user_phase(ctx, apply=True)
+        assert ctx.user_env.get('Path') == user_path
+
+
+def test_uninstall_keeps_what_the_user_added_to_the_path_after_the_install(machine: FakeContext[FakeMachine]) -> None:
+    ctx = machine
+    run_steps(ctx, STEPS)
+    ctx.user_env.values['Path'] += r';C:\AddedLater;'
+    uninstall.admin_phase(ctx)
+    uninstall.user_phase(ctx, apply=True)
+    assert ctx.user_env.get('Path') == r'C:\One;C:\AddedLater;'
