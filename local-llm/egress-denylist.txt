@@ -1,0 +1,634 @@
+# Domains the local-llm profiles must never reach. A line covers the domain and all its
+# subdomains ('openai.com' also refuses 'api.openai.com'). '#' starts a comment. Edited while
+# the proxy runs: it re-reads this file on change, no restart needed.
+#
+# Matching is by whole labels from the right: an entry covers hosts that end with '.<entry>'.
+# It does not cover a host whose first label merely contains the name, so a regional endpoint
+# such as 'bedrock-runtime.us-east-1.amazonaws.com' is refused only because 'amazonaws.com'
+# is listed. Raw IP addresses are matched exactly.
+#
+# The proxy refuses only what is listed here and lets everything else pass. This file is
+# therefore defence in depth: it names every known model producer, LLM API, agent service and
+# data sink, but it cannot name a host that does not exist yet, nor an arbitrary IP address.
+# The air-gap-equivalent configuration is the allow list described in
+# my-opencode-ollama-environment/2026-11-04-description.md, section 8.
+#
+# Extended on 2026-11-04. The original seven blocks are kept; the previous file is saved as
+# egress-denylist.txt.2026-11-04.bak.
+
+# ---------------------------------------------------------------------------------------
+# 1. Producers of the installed models
+# ---------------------------------------------------------------------------------------
+
+# OpenAI (gpt-oss:20b, gpt-oss-64k)
+openai.com
+chatgpt.com
+oaiusercontent.com
+oaistatic.com
+sora.com
+
+# Qwen / Alibaba Cloud (qwen3-coder:30b, qwen3-coder-32k): model builder, API, model hub
+qwen.ai
+qwenlm.ai
+qwenlm.github.io
+aliyun.com
+aliyuncs.com
+alibabacloud.com
+alibaba.com
+alibaba-inc.com
+alicdn.com
+modelscope.cn
+modelscope.ai
+
+# ---------------------------------------------------------------------------------------
+# 2. Vendors of the harnesses and of the runtime
+# ---------------------------------------------------------------------------------------
+
+# Anthropic (Claude, Claude Code)
+anthropic.com
+claude.ai
+claude.com
+claude.site
+claudeusercontent.com
+
+# opencode (its service, model catalogue and company sites)
+opencode.ai
+models.dev
+sst.dev
+anoma.ly
+
+# Ollama registry, cloud models, web search and update service. `ollama pull` and the
+# desktop updater do not use this proxy; they are covered by firewall rules, not by this file.
+ollama.com
+ollama.ai
+
+# ---------------------------------------------------------------------------------------
+# 3. Telemetry, crash reporting, feature flags, analytics
+# ---------------------------------------------------------------------------------------
+
+# Services Claude Code reports to on Anthropic's behalf
+datadoghq.com
+datadoghq.eu
+statsig.com
+statsigapi.net
+featureassets.org
+prodregistryv2.org
+sentry.io
+sentry-cdn.com
+
+# Generic product analytics and error trackers used by editors, extensions and CLIs
+segment.io
+segment.com
+posthog.com
+mixpanel.com
+amplitude.com
+bugsnag.com
+launchdarkly.com
+honeycomb.io
+newrelic.com
+nr-data.net
+rollbar.com
+raygun.io
+logrocket.com
+fullstory.com
+hotjar.com
+scarf.sh
+google-analytics.com
+googletagmanager.com
+app-measurement.com
+crashlytics.com
+
+# Microsoft / VS Code / Azure telemetry endpoints
+data.microsoft.com
+applicationinsights.azure.com
+services.visualstudio.com
+monitor.azure.com
+
+# ---------------------------------------------------------------------------------------
+# 4. Hosted LLM APIs and AI platforms (an LLM outside the laptop)
+# ---------------------------------------------------------------------------------------
+
+# Google: Gemini API, Vertex AI (regional *-aiplatform.googleapis.com), Gemini CLI backend,
+# AI Studio. 'googleapis.com' is deliberately broad; it also covers Cloud Storage.
+googleapis.com
+gemini.google.com
+aistudio.google.com
+bard.google.com
+notebooklm.google.com
+ai.google.dev
+deepmind.google
+deepmind.com
+
+# Microsoft / Azure: Azure OpenAI, Azure AI Foundry, Azure ML endpoints, Copilot
+openai.azure.com
+cognitiveservices.azure.com
+ai.azure.com
+ml.azure.com
+copilot.microsoft.com
+bing.microsoft.com
+
+# GitHub Copilot and GitHub Models
+githubcopilot.com
+copilot-proxy.githubusercontent.com
+copilot-telemetry.githubusercontent.com
+models.github.ai
+
+# Amazon: Bedrock, SageMaker, Amazon Q, Kiro. 'amazonaws.com' is deliberately broad; it also
+# covers S3 (regional endpoints cannot be listed one by one).
+amazonaws.com
+kiro.dev
+
+# Meta: Llama API and Meta AI
+ai.meta.com
+developer.meta.com
+llama.com
+meta.ai
+
+# Other model producers and API vendors (US / EU)
+mistral.ai
+deepseek.com
+x.ai
+grok.com
+cohere.com
+cohere.ai
+ai21.com
+perplexity.ai
+groq.com
+cerebras.ai
+sambanova.ai
+together.ai
+together.xyz
+fireworks.ai
+deepinfra.com
+nebius.com
+nebius.ai
+scaleway.ai
+novita.ai
+hyperbolic.xyz
+lepton.ai
+anyscale.com
+baseten.co
+modal.com
+modal.run
+replicate.com
+replicate.delivery
+fal.ai
+fal.run
+reka.ai
+inflection.ai
+aleph-alpha.com
+liquid.ai
+nousresearch.com
+arcee.ai
+upstage.ai
+writer.com
+voyageai.com
+jina.ai
+nomic.ai
+stability.ai
+character.ai
+poe.com
+you.com
+phind.com
+
+# NVIDIA NIM / NGC inference endpoints
+api.nvidia.com
+build.nvidia.com
+ngc.nvidia.com
+nvcf.nvidia.com
+
+# Enterprise platforms with hosted LLM endpoints
+cloud.ibm.com
+oraclecloud.com
+databricks.com
+snowflakecomputing.com
+
+# Gateways, routers and aggregators
+openrouter.ai
+requesty.ai
+portkey.ai
+helicone.ai
+litellm.ai
+unify.ai
+edenai.co
+edenai.run
+ai-gateway.vercel.sh
+api.cloudflare.com
+ai.cloudflare.com
+gateway.ai.cloudflare.com
+302.ai
+aihubmix.com
+
+# Model producers and API vendors (China)
+z.ai
+zhipuai.cn
+bigmodel.cn
+moonshot.cn
+moonshot.ai
+kimi.com
+kimi.ai
+minimax.io
+minimaxi.com
+minimax.chat
+01.ai
+lingyiwanwu.com
+baichuan-ai.com
+stepfun.com
+doubao.com
+volces.com
+volcengine.com
+byteplus.com
+baidubce.com
+cloud.baidu.com
+yiyan.baidu.com
+hunyuan.tencent.com
+tencentcloudapi.com
+tencentcloud.com
+cloud.tencent.com
+xfyun.cn
+xf-yun.com
+sensenova.cn
+sensetime.com
+huaweicloud.com
+myhuaweicloud.com
+siliconflow.cn
+siliconflow.com
+
+# Model producers and API vendors (other regions)
+yandex.cloud
+yandexcloud.net
+gigachat.devices.sberbank.ru
+ntruss.com
+
+# ---------------------------------------------------------------------------------------
+# 5. Coding assistants and agent services (they all forward code to a hosted model)
+# ---------------------------------------------------------------------------------------
+cursor.com
+cursor.sh
+codeium.com
+windsurf.com
+windsurf.ai
+tabnine.com
+sourcegraph.com
+ampcode.com
+augmentcode.com
+cline.bot
+kilocode.ai
+roocode.com
+supermaven.com
+codegpt.co
+twinny.dev
+continue.dev
+devin.ai
+cognition.ai
+factory.ai
+zed.dev
+trae.ai
+qodo.ai
+codium.ai
+blackbox.ai
+bito.ai
+replit.com
+v0.dev
+bolt.new
+lovable.dev
+
+# ---------------------------------------------------------------------------------------
+# 6. GPU clouds and inference hosts
+# ---------------------------------------------------------------------------------------
+runpod.io
+runpod.ai
+runpod.net
+lambdalabs.com
+lambda.ai
+vast.ai
+paperspace.com
+coreweave.com
+crusoe.ai
+lightning.ai
+beam.cloud
+
+# ---------------------------------------------------------------------------------------
+# 7. Model hubs and ML platforms (model downloads, dataset and artifact uploads)
+# ---------------------------------------------------------------------------------------
+huggingface.co
+hf.co
+huggingface.cloud
+hf.space
+civitai.com
+kaggle.com
+wandb.ai
+neptune.ai
+comet.com
+lmstudio.ai
+gpt4all.io
+jan.ai
+openwebui.com
+lmarena.ai
+
+# ---------------------------------------------------------------------------------------
+# 8. Search engines and search / scraping APIs (websearch is denied in the harness too)
+# ---------------------------------------------------------------------------------------
+serper.dev
+serpapi.com
+searchapi.io
+tavily.com
+exa.ai
+firecrawl.dev
+scrapingbee.com
+apify.com
+browserbase.com
+browserless.io
+search.brave.com
+bing.com
+duckduckgo.com
+kagi.com
+# google.com is not listed: it would also refuse docs on *.google.com. Add it if wanted.
+
+# ---------------------------------------------------------------------------------------
+# 9. Data exfiltration sinks
+# ---------------------------------------------------------------------------------------
+
+# Pastebins and anonymous text drops
+pastebin.com
+paste.ee
+hastebin.com
+dpaste.org
+dpaste.com
+ghostbin.co
+paste.rs
+sprunge.us
+ix.io
+termbin.com
+rentry.co
+rentry.org
+privatebin.net
+controlc.com
+justpaste.it
+
+# Code hosting write paths. github.com and raw.githubusercontent.com stay reachable for
+# documentation and release downloads; gists and the API are the paths that accept uploads.
+gist.github.com
+api.github.com
+uploads.github.com
+gitlab.com
+bitbucket.org
+atlassian.net
+
+# Anonymous file drops
+transfer.sh
+file.io
+0x0.st
+catbox.moe
+gofile.io
+wetransfer.com
+mega.nz
+mega.io
+mediafire.com
+anonfiles.com
+bayfiles.com
+pixeldrain.com
+uguu.se
+temp.sh
+tmpfiles.org
+filebin.net
+ufile.io
+
+# Cloud storage and document services
+dropbox.com
+dropboxapi.com
+box.com
+drive.google.com
+docs.google.com
+onedrive.live.com
+1drv.ms
+graph.microsoft.com
+sharepoint.com
+core.windows.net
+backblazeb2.com
+backblaze.com
+wasabisys.com
+digitaloceanspaces.com
+cloudflarestorage.com
+storj.io
+icloud.com
+icloud-content.com
+pcloud.com
+sync.com
+filen.io
+
+# Tunnels and reverse proxies (expose the laptop, or carry data out)
+ngrok.com
+ngrok.io
+ngrok.app
+ngrok-free.app
+ngrok.dev
+localtunnel.me
+loca.lt
+serveo.net
+trycloudflare.com
+localhost.run
+lhr.life
+pinggy.io
+pinggy.link
+bore.pub
+tunnelto.dev
+zrok.io
+tailscale.com
+tailscale.io
+expose.dev
+pagekite.me
+
+# Request catchers, webhook sinks and out-of-band interaction services
+webhook.site
+requestbin.com
+pipedream.net
+pipedream.com
+hookbin.com
+requestcatcher.com
+postb.in
+ptsv2.com
+beeceptor.com
+mocky.io
+interact.sh
+oast.pro
+oast.fun
+oast.live
+oast.me
+oast.online
+oast.site
+oastify.com
+burpcollaborator.net
+canarytokens.com
+dnslog.cn
+ceye.io
+requestrepo.com
+
+# Messaging and automation platforms (bots, webhooks, notifications)
+telegram.org
+t.me
+discord.com
+discordapp.com
+discord.gg
+slack.com
+teams.microsoft.com
+webhook.office.com
+whatsapp.com
+whatsapp.net
+wa.me
+messenger.com
+line.me
+viber.com
+matrix.org
+mattermost.com
+pushover.net
+ntfy.sh
+pushbullet.com
+ifttt.com
+zapier.com
+make.com
+integromat.com
+n8n.cloud
+twilio.com
+pagerduty.com
+opsgenie.com
+
+# Mail APIs, webmail, disposable inboxes and form relays
+sendgrid.net
+sendgrid.com
+mailgun.net
+mailgun.com
+smtp2go.com
+resend.com
+mailjet.com
+postmarkapp.com
+mailchimp.com
+mandrillapp.com
+sparkpostmail.com
+brevo.com
+sendinblue.com
+mail.google.com
+gmail.com
+outlook.office.com
+outlook.office365.com
+outlook.com
+mail.yahoo.com
+protonmail.com
+proton.me
+temp-mail.org
+guerrillamail.com
+10minutemail.com
+mailinator.com
+yopmail.com
+emailjs.com
+formspree.io
+formsubmit.co
+getform.io
+web3forms.com
+
+# Deployment targets (a deploy is an upload)
+fly.io
+heroku.com
+herokuapp.com
+render.com
+onrender.com
+railway.app
+vercel.com
+vercel.app
+netlify.com
+netlify.app
+surge.sh
+glitch.com
+glitch.me
+pages.dev
+workers.dev
+deno.dev
+val.town
+replit.app
+repl.co
+koyeb.com
+koyeb.app
+
+# Decentralised storage
+ipfs.io
+dweb.link
+pinata.cloud
+web3.storage
+nft.storage
+arweave.net
+infura.io
+alchemy.com
+
+# ---------------------------------------------------------------------------------------
+# 10. DNS-over-HTTPS resolvers (a tunnel channel that bypasses the system resolver)
+# ---------------------------------------------------------------------------------------
+dns.google
+cloudflare-dns.com
+one.one.one.one
+dns.quad9.net
+doh.opendns.com
+dns.nextdns.io
+dns.adguard.com
+dns.adguard-dns.com
+doh.cleanbrowsing.org
+dns.mullvad.net
+doh.dns.sb
+dns.alidns.com
+doh.pub
+1.1.1.1
+1.0.0.1
+8.8.8.8
+8.8.4.4
+9.9.9.9
+149.112.112.112
+208.67.222.222
+208.67.220.220
+94.140.14.14
+94.140.15.15
+
+# ---------------------------------------------------------------------------------------
+# 11. Social networks and SaaS that accept posts or uploads
+# ---------------------------------------------------------------------------------------
+x.com
+twitter.com
+reddit.com
+facebook.com
+instagram.com
+threads.net
+bsky.app
+bsky.social
+mastodon.social
+linkedin.com
+tiktok.com
+pinterest.com
+tumblr.com
+medium.com
+dev.to
+hashnode.com
+substack.com
+wordpress.com
+blogger.com
+notion.so
+notion.site
+airtable.com
+trello.com
+asana.com
+monday.com
+clickup.com
+linear.app
+hubspot.com
+salesforce.com
+force.com
+zendesk.com
+freshdesk.com
+intercom.io
+
+# ---------------------------------------------------------------------------------------
+# 12. Not listed on purpose
+# ---------------------------------------------------------------------------------------
+# registry.npmjs.org, pypi.org, files.pythonhosted.org, crates.io: the local opencode config
+#   installs its plugin package from npm, and publishing to any of them needs a token.
+# github.com, raw.githubusercontent.com, release-assets.githubusercontent.com,
+#   objects.githubusercontent.com, codeload.github.com: documentation and release downloads.
+# docs.python.org, peps.python.org and similar documentation sites.
+# google.com: see block 8.

@@ -1,0 +1,13 @@
+{
+  "include": ["envtypes.py", "envsetup.py", "install.py", "verify.py", "uninstall.py", "ollama_pull.py", "tests"],
+  "exclude": ["**/__pycache__", ".venv", "local-llm"],
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.14",
+  "pythonPlatform": "Windows",
+  "typeCheckingMode": "standard",
+  "strict": ["envtypes.py", "envsetup.py", "install.py", "verify.py", "uninstall.py", "ollama_pull.py"],
+  "reportUnusedImport": "error",
+  "reportOptionalMemberAccess": "error",
+  "reportIncompatibleMethodOverride": "error"
+}

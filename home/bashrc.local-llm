@@ -1,0 +1,5 @@
+# >>> local-llm >>>
+alias opencode-local='"$HOME/local-llm/opencode-local.cmd"'
+alias claude-local='"$HOME/local-llm/claude-local.cmd"'
+alias claude-local-oss='LOCAL_LLM_MODEL=gpt-oss-64k "$HOME/local-llm/claude-local.cmd"'
+# <<< local-llm <<<

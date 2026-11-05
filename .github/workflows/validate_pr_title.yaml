@@ -1,0 +1,37 @@
+name: validate-pr-title
+
+# A squash merge uses the pull request title as the commit subject, so the PR
+# title -- not the individual commits on the branch -- is what ends up in the
+# history that `cz bump` reads to decide the next version. It gets the same
+# Conventional Commits check that a local commit message gets.
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate-pr-title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-python
+        with:
+          sync-args: "--group dev --frozen"
+
+      # The title goes through the environment rather than being interpolated
+      # into the script: a PR title is attacker-controlled text.
+      - name: Check the PR title against Conventional Commits
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: uv run --frozen cz check --message "$PR_TITLE"

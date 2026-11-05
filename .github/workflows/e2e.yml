@@ -1,0 +1,34 @@
+name: e2e
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    # A disposable, elevated Windows machine: the only kind of place where the
+    # real install, verify and uninstall may run unattended. The script changes
+    # the real user environment and the real firewall rules, then checks that
+    # the uninstall put them back. Ollama and the models are skipped: their
+    # 1.7 GB and 18 GB are for the VM run described in tests/e2e/vm-e2e.ps1.
+    runs-on: windows-latest
+    # A first value, not a measurement yet: set it from the duration of the first runs.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-python
+
+      - name: Install, verify and uninstall
+        shell: powershell
+        run: ./tests/e2e/ci-e2e.ps1

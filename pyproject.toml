@@ -1,0 +1,64 @@
+[project]
+name = "my-opencode-ollama-environment"
+# Nothing is built or published from here: the installer runs straight from the
+# clone (`install.cmd` -> `uv run --no-project`). The git tag is the version
+# (commitizen, version_provider = "scm"); this field only satisfies the schema.
+version = "0.0.0"
+description = "Unattended installer for a local-LLM coding environment on Windows 11 Home: Ollama, OpenCode, Claude Code, the egress proxy and the firewall rules."
+readme = "README.md"
+requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = []
+
+[tool.uv]
+# Scripts at the repository root, not a package: `uv sync` installs the tool
+# groups and nothing else.
+package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+    "pytest-timeout",
+    "pytest-xdist",
+    "ruff",
+    "pyright",
+    "pyrefly",
+    "bandit[toml]",
+    "pip-audit",
+    "pre-commit",
+    "commitizen",
+    "pytest-bdd>=9.0.1",
+    "hypothesis>=6.170.14",
+]
+
+[tool.commitizen]
+# Conventional Commits, enforced in two places: the commit-msg pre-commit hook
+# on every local commit, and `cz check` over the PR title in CI (a squash merge
+# takes the PR title as the commit subject, so that is the one that lands).
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "scm"
+update_changelog_on_bump = false
+
+[tool.pytest.ini_options]
+# Integration tests touch the real operating system, so they run only on request
+# (make integration, or pytest -m integration); see tests/integration.
+addopts = '-ra --strict-markers --durations=20 -m "not integration"'
+testpaths = ["tests"]
+markers = [
+    "unit: fast tests with no external dependencies",
+    "integration: runs against the real operating system (registry, firewall, sockets, ACLs); excluded by default",
+]
+# A hung test should fail the build, not sit there until the job timeout kills
+# it with no useful output. timeout_func_only keeps the clock on the test body.
+timeout = 300
+timeout_func_only = true
+# Warnings are failures, like every other gate here: a DeprecationWarning is a
+# future breakage that has already been diagnosed. Each ignore below must name
+# a specific message, never a bare category, and say why it cannot be fixed.
+filterwarnings = [
+    "error",
+]

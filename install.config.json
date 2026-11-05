@@ -1,0 +1,48 @@
+{
+  "minimum_free_gb": 40,
+  "minimum_free_gb_with_optional": 70,
+  "tools": {
+    "python_for_proxy": "3.14"
+  },
+  "ollama": {
+    "winget_id": "Ollama.Ollama",
+    "version": "0.40.14",
+    "installer_sha256": "e069c7cc7d4808f77684e81efa0b1f853a5190b4b8f070bc8fd63041180e3eba",
+    "server_json": { "disable_ollama_cloud": true },
+    "user_env": { "OLLAMA_FLASH_ATTENTION": "1", "OLLAMA_VULKAN": "0" },
+    "app_settings": { "auto_update_enabled": 0, "airplane_mode": 1 }
+  },
+  "models": {
+    "pull": ["qwen3-coder:30b"],
+    "create": { "qwen3-coder-32k": "local-llm/qwen3-coder-32k.Modelfile" },
+    "optional_pull": ["gpt-oss:20b"],
+    "optional_create": { "gpt-oss-64k": "local-llm/gpt-oss-64k.Modelfile" },
+    "install_optional": false
+  },
+  "harness": {
+    "opencode": {
+      "version": "1.18.34",
+      "url": "https://github.com/sst/opencode/releases/download/v1.18.34/opencode-windows-x64.zip",
+      "zip_sha256": "8ec42ed1ad8db108052394b83ab69d0331398f761fbfff5fe50f91d65bdd3548",
+      "exe_sha256": "5283c2cd5b4285855daa97e6f7d17bf48146227cdf2a940e79e0f2b7869fd06e"
+    },
+    "claude": {
+      "version": "2.1.292",
+      "url": "https://downloads.claude.ai/claude-code-releases/2.1.292/win32-x64/claude.exe",
+      "exe_sha256": "eb95bb65955f8b1702e800815f9a2c0388a5de0f196c354c7ee1dd5cb9a2ba23"
+    }
+  },
+  "firewall": {
+    "block_harness_and_runner": true,
+    "block_ollama_server_and_app": true
+  },
+  "shell": {
+    "bashrc_aliases": true,
+    "path_wrappers": true,
+    "confidential_roots": ["%USERPROFILE%\\YOUR_CONFIDENTIAL_FOLDER"]
+  },
+  "cloud": {
+    "install_harnesses": false,
+    "winget": { "opencode": "SST.opencode", "claude": "Anthropic.ClaudeCode" }
+  }
+}

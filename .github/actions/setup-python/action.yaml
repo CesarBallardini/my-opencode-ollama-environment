@@ -1,0 +1,28 @@
+name: Set up the Python environment
+description: Install uv and sync the tool environment from the committed lockfile.
+
+# Python itself is not installed with actions/setup-python: uv provisions the
+# interpreter named in .python-version as part of `uv sync`, so CI matches a
+# local `make install`. That file names one exact release because uv prefers a
+# Python it finds: given only `3.14`, it would take the runner's own Python.
+
+inputs:
+  uv-version:
+    description: Version of uv to install.
+    required: false
+    default: "0.13.7"
+  sync-args:
+    description: Arguments passed to `uv sync`.
+    required: false
+    default: "--all-groups --frozen"
+
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/install-uv
+      with:
+        uv-version: ${{ inputs.uv-version }}
+
+    - name: Sync the environment
+      shell: bash
+      run: uv sync ${{ inputs.sync-args }}
