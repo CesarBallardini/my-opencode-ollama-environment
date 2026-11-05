@@ -186,10 +186,12 @@ def test_check_proxy_starts_the_proxy_when_needed(ctx: FakeContext, monkeypatch:
     monkeypatch.setattr(verify.shutil, 'which', lambda _command: 'C:/uv.exe')
 
     class Child:
-        terminated = False
+        pid = 4242
+        waited = False
 
-        def terminate(self) -> None:
-            self.terminated = True
+        def wait(self, timeout: float) -> int:
+            self.waited = timeout > 0
+            return 0
 
     child = Child()
     started: list[list[str]] = []
@@ -208,7 +210,8 @@ def test_check_proxy_starts_the_proxy_when_needed(ctx: FakeContext, monkeypatch:
     )
     assert statuses(verify.check_proxy(ctx)) == ['PASS', 'PASS']
     assert started == [['C:/uv.exe', str(ctx.paths.local_llm / 'egress_proxy.py')]]
-    assert child.terminated
+    assert ['taskkill', '/T', '/F', '/PID', '4242'] in ctx.runner.calls
+    assert child.waited
     monkeypatch.setattr(verify, 'port_open', lambda _port: False)
     monkeypatch.setattr(verify, 'PROXY_START_SECONDS', 0)
     assert 'did not listen' in verify.check_proxy(ctx)[0].detail

@@ -1,5 +1,7 @@
 # my-opencode-ollama-environment
 
+[![site](https://img.shields.io/website?url=https%3A%2F%2Fkatra.ballardini.com.ar%2Fposts%2Funa-llm-local-enjaulada%2F&label=site&up_message=online&down_message=offline)](https://katra.ballardini.com.ar/posts/una-llm-local-enjaulada/)
+
 I first installed Ollama, OpenCode, Claude Code and an egress proxy by hand to keep a local model and its
 tools off the Internet while working on source code that a non-disclosure agreement forbids sending to
 cloud-based LLMs. This repository turns that setup into an unattended installer. The code in this repository
@@ -213,6 +215,7 @@ was already installed, a `~/local-llm` that already existed, variables that were
 - The uv-managed Python the installer added is left in place, because `uninstall.cmd` itself runs on it;
   the program prints the command to run by hand (`uv python uninstall 3.14`).
 - The ACL restriction of `secrets.env` is never reverted.
+- A running egress proxy is not stopped. Close its minimized "local-llm egress proxy" window first.
 - `~/local-llm`, when created by the installer, is deleted whole, session data included; back up
   `~/local-llm/opencode/data` first if you want to keep it.
 

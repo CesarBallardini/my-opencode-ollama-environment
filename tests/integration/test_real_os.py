@@ -19,7 +19,7 @@ import winreg
 from typing import TYPE_CHECKING
 
 import pytest
-from conftest import REPO, FakeContext
+from conftest import PINNED, REPO, FakeContext
 
 import envsetup as es
 import install
@@ -154,6 +154,35 @@ def test_the_egress_proxy_template_refuses_a_denied_host(tmp_path: Path, monkeyp
     finally:
         child.terminate()
         child.wait(timeout=10)
+
+
+def test_stopping_the_proxy_started_through_uv_frees_its_port_and_directory(runner: es.Runner, tmp_path: Path) -> None:
+    home = tmp_path / 'local-llm'
+    home.mkdir()
+    for name in ('egress_proxy.py', 'egress-denylist.txt'):
+        shutil.copy2(REPO / 'local-llm' / name, home / name)
+    port = free_port()
+    uv = shutil.which('uv')
+    assert uv is not None
+    # The way verify starts it: through uv, from the installed directory, on a free port here.
+    python = PINNED['tools']['python_for_proxy']
+    args = [uv, 'run', '--no-project', '--python', python, 'python', '-I', str(home / 'egress_proxy.py')]
+    child = subprocess.Popen(  # nosec B603  # noqa: S603
+        [*args, '--port', str(port)],
+        cwd=str(home),
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        deadline = time.monotonic() + PROXY_START_SECONDS
+        while not verify.port_open(port) and time.monotonic() < deadline:
+            time.sleep(0.2)
+        assert verify.port_open(port), 'the proxy did not start'
+    finally:
+        verify.stop_process_tree(runner, child)
+    assert not verify.port_open(port)
+    shutil.rmtree(home)  # WinError 32 while a surviving child has its working directory here
 
 
 @pytest.mark.parametrize('wrapper', ['install.cmd', 'verify.cmd', 'uninstall.cmd', 'ollama-pull.cmd'])

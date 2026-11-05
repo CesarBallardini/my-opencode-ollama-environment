@@ -7,6 +7,7 @@ from the configuration, left unchanged by the installer); FAIL. Exit status 1 wh
 from __future__ import annotations
 
 import argparse
+import contextlib
 import http
 import importlib.util
 import json
@@ -31,11 +32,12 @@ from envtypes import ProxyProbeDto
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from envtypes import BlockState, EgressProxyModule, JsonValue, OutcomeStatus
+    from envtypes import BlockState, CommandRunner, EgressProxyModule, JsonValue, OutcomeStatus
 
 PROXY_DENIED_PROBE = 'https://api.openai.com'
 PROXY_ALLOWED_PROBE = 'https://docs.python.org'
 PROXY_START_SECONDS = 30
+PROXY_STOP_SECONDS = 10
 VERSION_TIMEOUT_SECONDS = 120
 OLLAMA_PORT = 11434
 LOOPBACK_ADDRESSES = ('127.0.0.1', '::1')
@@ -283,6 +285,17 @@ def start_proxy(ctx: es.Context, proxy: Path, uv: str) -> subprocess.Popen[bytes
     )
 
 
+def stop_process_tree(runner: CommandRunner, process: subprocess.Popen[bytes]) -> None:
+    """Stop a process together with its children.
+
+    `uv run` starts Python as a child, and terminating uv on Windows leaves that child running. The
+    proxy would keep its port and, with its working directory in ~/local-llm, block deleting that tree.
+    """
+    runner.run(['taskkill', '/T', '/F', '/PID', str(process.pid)], check=False)
+    with contextlib.suppress(subprocess.TimeoutExpired):
+        process.wait(timeout=PROXY_STOP_SECONDS)
+
+
 def proxy_outcomes(denied: ProxyProbeDto, allowed: ProxyProbeDto) -> list[OutcomeDto]:
     """Outcomes for the two probes: a denied host must be refused, an allowed host must answer."""
     denied_kind, denied_detail = denied
@@ -326,7 +339,7 @@ def check_proxy(ctx: es.Context) -> list[OutcomeDto]:
         return proxy_outcomes(through_proxy(PROXY_DENIED_PROBE), through_proxy(PROXY_ALLOWED_PROBE))
     finally:
         if child is not None:
-            child.terminate()
+            stop_process_tree(ctx.runner, child)
 
 
 def check_binaries_run(ctx: es.Context) -> list[OutcomeDto]:

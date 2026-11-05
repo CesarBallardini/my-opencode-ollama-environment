@@ -515,6 +515,9 @@ start, which is the `registry.npmjs.org` traffic the proxy log shows (3.3), and 
 - On the current laptop `egress_proxy.py` and `ensure-proxy.cmd` under `~/local-llm` differ from the
   repository templates by their Python version line only (3.13 there, 3.14 here); `verify` reports WARN
   until `install.cmd --update-templates` is run, which journals the two replaced files.
+- `uninstall.cmd` does not stop an egress proxy that a launcher already started. It keeps running from a
+  deleted tree until its window is closed, and the deletion fails if that proxy's working directory is inside
+  `~/local-llm`. The README says to close it first.
 - testinfra was assessed for the machine checks and not adopted: its local backend fails on Windows
   (`bytes args is not allowed on Windows`) and its Windows modules only work over WinRM. `verify.py`
   performs the checks itself; a pytest-marked suite that reuses those checks remains possible.
@@ -529,7 +532,7 @@ What was run on 2026-11-04:
 
 - The quality gates, all green on the final code: `ruff check` and `ruff format --check`, `pyright` and
   `pyrefly check` (0 errors), `bandit`, 169 tests, coverage 99.54 % (floor 85), `pip-audit`, `osv-scanner`,
-  `gitleaks`, `uv lock --check`. Of the 17 integration tests, 15 passed and 2 skipped here; those 2 need an elevated process.
+  `gitleaks`, `uv lock --check`. Of the 18 integration tests, 16 passed and 2 skipped here; those 2 need an elevated process.
 - `install.cmd --dry-run`, exit 0. Preflight: WARN 2 GB free (Ollama present, so no stop). The laptop would
   need room freed before a real run that downloads anything. Already done:
   ollama (0.40.14 found), python, ollama-config, models, binaries. Pending: app-settings (both values),
@@ -568,6 +571,11 @@ reproduced on the laptop, none came from CI itself, and the first two would also
   registry entries now come first and the process's own entries stay behind them.
 - `ruff.toml` excluded `local-llm/`, but pre-commit passes file names, and ruff checks a named file unless
   `force-exclude` is set. `ruff check .` never showed it.
+
+The next run got as far as `uninstall --yes`, which failed with WinError 32 on `local-llm`. `verify` started the
+proxy through `uv run` and stopped only `uv`, so the Python child kept running, with the port and with its
+working directory in that tree. The second `verify` then found it already listening. `verify` now stops the
+whole process tree. This also reproduced on the laptop.
 
 Those same runs were the first real ones of several things, and they worked: the firewall integration tests on
 an elevated runner, the downloads with their SHA-256 checks, and the five firewall rules.
