@@ -238,3 +238,7 @@ stopped when run again. When the journal is empty the program reports that there
 ## Development
 
 The quality gates, the type conventions and the test layers are described in `development.md`.
+
+## License
+
+MIT. See `LICENSE`.

@@ -7,6 +7,8 @@ version = "0.0.0"
 description = "Unattended installer for a local-LLM coding environment on Windows 11 Home: Ollama, OpenCode, Claude Code, the egress proxy and the firewall rules."
 readme = "README.md"
 requires-python = ">=3.14"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = []
 
 [tool.uv]

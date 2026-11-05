@@ -374,6 +374,7 @@ my-opencode-ollama-environment/
   .gitattributes                     LF for text, CRLF for *.cmd, local-llm/** untouched by git
   install.config.json                pins, checksums, switches, Appendix B
   secrets.env.example                Appendix C
+  LICENSE                            MIT
   .gitignore                         logs/, *.bak, *.log, secrets.env, the tool caches and .venv/, node_modules/,
                                      local-llm/opencode/{data,cache,state,bin}/, the runtime state under
                                      local-llm/claude/, and the two generated files of section 5
