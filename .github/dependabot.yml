@@ -1,0 +1,58 @@
+version: 2
+
+# Every pull request title here must pass validate_pr_title.yaml (Conventional
+# Commits), so each ecosystem sets commit-message.prefix: Dependabot's own
+# default ("Bump x from a to b") has no type and would be rejected.
+#
+# Grouping collapses a week's worth of bumps into one PR per ecosystem, so the
+# CI and security gates run once over the whole batch instead of once per
+# dependency.
+
+updates:
+  - package-ecosystem: "uv"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      all:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      all:
+        patterns:
+          - "*"
+
+  # Keeps the SHA-pinned `uses:` in the composite actions under
+  # .github/actions/ updated too -- Dependabot does not find them via the
+  # workflows directory alone.
+  - package-ecosystem: "github-actions"
+    directory: "/.github/actions/install-uv"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+
+  # pre-commit hook revs. A gitleaks bump has to move security.yml with it.
+  - package-ecosystem: "pre-commit"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "build"
+      include: "scope"
+    groups:
+      all:
+        patterns:
+          - "*"

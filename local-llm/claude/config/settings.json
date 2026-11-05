@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "deny": [
+      "WebSearch"
+    ],
+    "blockReadsOutsideWorkingDirectories": true
+  },
+  "skipWebFetchPreflight": true,
+  "theme": "dark"
+}

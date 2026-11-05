@@ -1,0 +1,26 @@
+# Coverage configuration -- deliberately its own file rather than a
+# [tool.coverage.*] table in pyproject.toml, so it sits alongside the other
+# quality-gate configs (ruff.toml, bandit.yaml, pyrightconfig.json, pyrefly.toml)
+# and can be passed explicitly with --cov-config from any working directory.
+#
+# fail_under is a hard gate, not a report: `pytest --cov` exits non-zero below
+# it, so a coverage drop fails CI the same way a lint or type error does.
+
+[run]
+# The tests and the deployed template tree are not what is measured.
+omit =
+    tests/*
+    local-llm/*
+    .venv/*
+
+[report]
+fail_under = 85
+show_missing = true
+precision = 0
+# Lines that only run outside the test process: the script entry points, and
+# the Win32 calls (elevation, console-session lookup, the registry broadcast)
+# that a unit test cannot exercise without changing the machine it runs on.
+# Every "pragma: no cover" in the sources carries its reason next to it.
+exclude_also =
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:

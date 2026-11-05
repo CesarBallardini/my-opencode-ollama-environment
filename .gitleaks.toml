@@ -1,0 +1,29 @@
+# Gitleaks configuration.
+#
+# `gitleaks dir` walks the working tree, which includes directories git itself
+# ignores: the synced .venv, the coverage report, tool caches and the installer
+# logs. None of it is authored here and none of it is committed, so it is not
+# a place a secret of ours can leak from.
+#
+# This does not weaken the commit-time check: the pre-commit hook runs
+# `gitleaks git --staged`, which only ever sees staged files, and these are
+# gitignored. What it fixes is `make secrets` and the whole-tree scan in CI.
+#
+# Character class [\/] rather than a bare /: finding paths use the host
+# separator, so the patterns have to match backslashes on Windows too.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated, vendored and cached directories -- never committed"
+paths = [
+  '''(^|[\/])\.venv[\/]''',
+  '''(^|[\/])htmlcov[\/]''',
+  '''(^|[\/])logs[\/]''',
+  '''(^|[\/])\.pytest_cache[\/]''',
+  '''(^|[\/])\.ruff_cache[\/]''',
+  '''(^|[\/])\.pyrefly_cache[\/]''',
+  '''(^|[\/])\.mypy_cache[\/]''',
+  '''(^|[\/])\.hypothesis[\/]''',
+]

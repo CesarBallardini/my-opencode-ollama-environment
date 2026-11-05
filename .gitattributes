@@ -1,0 +1,7 @@
+# Line endings are part of the content here: the installer copies local-llm/
+# byte for byte and verify.cmd reports any difference, and cmd.exe reads batch
+# files most reliably with CRLF. Git must therefore never convert them on
+# checkout, whatever core.autocrlf says on the machine that clones.
+* text=auto eol=lf
+*.cmd text eol=crlf
+local-llm/** -text

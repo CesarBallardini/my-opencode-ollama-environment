@@ -1,0 +1,32 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "enabled_providers": ["ollama"],
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (local)",
+      "options": { "baseURL": "http://127.0.0.1:11434/v1" },
+      "models": {
+        "qwen3-coder-32k": {
+          "name": "Qwen3-Coder 30B-A3B, 32k (local)",
+          "tool_call": true,
+          "limit": { "context": 32768, "output": 8192 }
+        },
+        "gpt-oss-64k": {
+          "name": "gpt-oss 20B, 64k (local)",
+          "tool_call": true,
+          "reasoning": true,
+          "limit": { "context": 65536, "output": 8192 }
+        }
+      }
+    }
+  },
+  "model": "ollama/qwen3-coder-32k",
+  "small_model": "ollama/qwen3-coder-32k",
+  "share": "disabled",
+  "autoupdate": false,
+  "permission": {
+    "webfetch": "allow",
+    "websearch": "deny"
+  }
+}

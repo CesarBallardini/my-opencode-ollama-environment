@@ -1,0 +1,55 @@
+line-length = 119
+target-version = "py314"
+
+# local-llm/ holds the files the installer copies to ~/local-llm, byte for
+# byte; verify.cmd reports any difference between the two. egress_proxy.py is
+# therefore not reformatted here: a change to it is a change to the deployed
+# proxy and goes through --update-templates, not through a lint pass.
+exclude = ["local-llm"]
+
+[lint]
+select = [
+    "E", "F", "W",  # pycodestyle + pyflakes
+    "I",            # isort
+    "N",            # pep8-naming
+    "UP",           # pyupgrade
+    "B",            # flake8-bugbear
+    "C90",          # mccabe complexity -- honors [lint.mccabe] max-complexity below
+    "S",            # flake8-bandit
+    "SIM",          # flake8-simplify
+    "RET",          # flake8-return
+    "PIE",          # flake8-pie
+    "TCH",          # flake8-type-checking
+    "YTT",          # flake8-2020
+    "D",            # pydocstyle
+    "ANN",          # flake8-annotations
+    "ARG",          # unused arguments
+    "PL",           # pylint
+    "FLY",          # flynt: static join to f-string
+    "RUF",          # ruff-specific rules
+    "T20",          # print() left in the code
+    "TID",          # banned imports, see below
+]
+ignore = [
+    "D203",  # one-blank-line-before-class -- conflicts with D211
+    "D213",  # multi-line-summary-second-line -- conflicts with D212
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.mccabe]
+max-complexity = 15
+
+[lint.flake8-tidy-imports.banned-api]
+"typing.Any".msg = "Name the shape instead: a DTO or JsonValue from envtypes.py, a Protocol, or a type variable."
+
+[lint.per-file-ignores]
+# assert is the idiomatic way to write a test assertion; it's disallowed
+# in application code because `python -O` strips asserts at runtime.
+# PLR2004: the expected counts and values in assertions are the point of a
+# test; naming each one would say nothing the assertion does not already say.
+"tests/**" = ["S101", "D", "PLR2004"]
+
+[format]
+quote-style = "single"

@@ -1,0 +1,13 @@
+# Bandit configuration (SAST -- static security analysis).
+#
+# There is no baseline: any finding fails CI, pre-commit and `make security`.
+# A finding that is accepted on purpose carries an inline `# nosec Bxxx` with
+# the reason next to it.
+#
+# local-llm/ is the deployed template tree (see ruff.toml); it is excluded here
+# for the same reason and is not touched by a lint pass.
+exclude_dirs:
+  - tests
+  - .venv
+  - local-llm
+  - htmlcov

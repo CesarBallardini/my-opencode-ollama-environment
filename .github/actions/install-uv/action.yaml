@@ -1,0 +1,21 @@
+name: Install uv
+description: Install a pinned version of the uv package manager.
+
+# The uv version is pinned rather than floating on a major tag: uv resolves and
+# installs from uv.lock, so a surprise uv upgrade in CI can change what gets
+# installed without any commit to this repository. Bump this deliberately, in
+# step with the uv used locally (`uv --version`).
+
+inputs:
+  uv-version:
+    description: Version of uv to install.
+    required: false
+    default: "0.13.7"
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      with:
+        version: ${{ inputs.uv-version }}

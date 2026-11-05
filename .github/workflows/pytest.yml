@@ -1,0 +1,41 @@
+name: pytest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    # The sources import winreg and the tests exercise Windows paths, so the
+    # suite only runs on a Windows runner.
+    runs-on: windows-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-python
+
+      # --cov-config makes the .coveragerc gate explicit rather than relying on
+      # coverage's file discovery; fail_under in that file is what turns a
+      # coverage drop into a failed build.
+      - name: Run tests with coverage
+        run: >-
+          uv run --frozen pytest -n auto
+          --cov=.
+          --cov-config=.coveragerc
+          --cov-report=xml
+          --cov-report=term-missing
+
+      # Against the real OS. The runner is elevated, so the firewall tests that
+      # skip in a plain console run here.
+      - name: Run integration tests
+        run: uv run --frozen pytest -m integration

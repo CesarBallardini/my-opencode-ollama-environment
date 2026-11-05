@@ -1,0 +1,16 @@
+# Second type checker, run alongside pyright on purpose -- not a migration:
+# two different inference engines over the same code tend to catch different
+# things. Suppressions are kept in parity between the two.
+#
+# pyrefly is young and its config schema evolves -- check
+# https://pyrefly.org/ for the current keys before relying on this file.
+
+project-includes = ["envtypes.py", "envsetup.py", "install.py", "verify.py", "uninstall.py", "ollama_pull.py", "tests"]
+project-excludes = ["local-llm", ".venv"]
+# The scripts import each other from the repository root, and the tests import
+# conftest from tests/ (pytest puts both on sys.path).
+search-path = [".", "tests"]
+python-version = "3.14"
+# The code imports winreg and calls Win32 APIs; the checkers must resolve the
+# Windows stubs even when they run on a Linux CI runner.
+python-platform = "windows"

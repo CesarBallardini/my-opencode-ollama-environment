@@ -1,0 +1,47 @@
+# Installer run logs and backups
+logs/
+*.bak
+*.log
+
+# Secrets never live in the clone (see README: ~/.secrets/my-opencode-ollama-environment/)
+secrets.env
+
+# Python tooling (uv-managed environment, caches, coverage)
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyrefly_cache/
+.hypothesis/
+htmlcov/
+.coverage
+coverage.xml
+
+# Runtime state that the harnesses write next to the templates when run from
+# the clone; the installed copies live under ~/local-llm
+node_modules/
+local-llm/opencode/data/
+local-llm/opencode/cache/
+local-llm/opencode/state/
+local-llm/opencode/config/opencode/package.json
+local-llm/opencode/config/opencode/package-lock.json
+local-llm/opencode/config/opencode/bun.lock
+local-llm/opencode/bin/
+local-llm/claude/bin/
+local-llm/claude/config/.claude.json
+local-llm/claude/config/history.jsonl
+local-llm/claude/config/projects/
+local-llm/claude/config/sessions/
+local-llm/claude/config/session-env/
+local-llm/claude/config/shell-snapshots/
+local-llm/claude/config/backups/
+
+# Generated once per machine by install.cmd, never templates
+local-llm/confidential-roots.txt
+local-llm/cloud-binaries.cmd
+
+# Editor swap files, which hold copies of whatever is being edited
+*.swp
+*.swo
